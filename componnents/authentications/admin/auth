@@ -1,0 +1,14 @@
+require('dotenv').config()
+const result = {
+    login:async (req,res)=>{
+        let {email,password} = req.body;
+        if(!email || !password) res.json({success:false,msg : 'Please enter email and password fields'});
+        if(email == process.env.ADMIN_EMAIL && password == process.env.ADMIN_PASSWORD){
+            res.json({success:true, token:process.env.ADMIN_TOKEN, msg : 'Login Successfull'});
+        }else{
+            res.json({success:false,msg : 'Invalid email or password'});
+        }        
+    }
+}
+
+module.exports = result;
