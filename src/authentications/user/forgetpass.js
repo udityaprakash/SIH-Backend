@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
-const student = require("../../databasevariables/enduserschema");
-const path=require("../../../path");
+const farmer = require("../../databasevariables/farmerSchema");
 const nodemailer=require("nodemailer");
 const otpGenerator = require('otp-generator');
 const signup = require("./signup");
+const jwt = require("jsonwebtoken");
 require('dotenv').config();
 var Emailvalidator = require("email-validator");
 var transporter = nodemailer.createTransport({
@@ -18,7 +18,6 @@ var transporter = nodemailer.createTransport({
 
 const result={
     get_enteremail:(req,res)=>{
-        // res.sendFile(path+"/public/forgetenteremail.html");
         res.json({
           success:true,
           method:"post",
@@ -32,13 +31,13 @@ const result={
           let indatabaseotpstored= false;
 
 
-          if (await signup.studentexist(email)){
+          if (await signup.userexist(email)){
             console.log("ueser exixt 1");
-            const resu = await student.find({email:email});
+            const resu = await farmer.find({email:email});
             console.log("ueser exixt 2");
             if(resu.length!=0){
               console.log("ueser exixt 3");
-              const updat = await student.findOneAndUpdate({email:email}, {otp:otp , verified:false});
+              const updat = await farmer.findOneAndUpdate({email:email}, {otp:otp , verified:false});
               console.log("ueser exixt 4");
 
               console.log("updated for reset password : "+updat);
@@ -54,7 +53,7 @@ const result={
           var mailOptions = {
                 from: 'udityap.davegroup@gmail.com',
                 to: email,
-                subject: 'Reset Password for DAWAY',
+                subject: 'Reset Password for AgroMitra',
                 html: `<div style="max-width: 90%; margin: auto; padding-top: 20px">
               <p style="margin-bottom: 30px;">Please enter the OTP to get started</p>
               <h1 style="font-size: 40px; letter-spacing: 2px; text-align:center;">${otp}</h1></div>`
@@ -98,15 +97,15 @@ const result={
       const {otp , email} = req.body ;
       if(Emailvalidator.validate(email) && otp && email){
 
-          if (signup.studentexist(email)){
-            const resu = await student.find({ email : email});
+          if (signup.userexist(email)){
+            const resu = await farmer.find({ email : email});
             if(resu.length!=0){
               if(resu[0].otp == otp){
-                const fin = await student.findOneAndUpdate({email : email},{otp : null , verified : true});
+                const fin = await farmer.findOneAndUpdate({email : email},{otp : null , verified : true});
               
                 res.json({
                   success:true,
-                  token:resu[0].id,
+                  id:resu[0].id,
                   msg:"user verified successfully",
                   result:fin
                 });
@@ -137,18 +136,27 @@ const result={
     }
   },
   Set_password: async (req,res)=>{
-    let {id, password}= req.body;
+    let {id, password, language}= req.body;
           try{
-            const query = await student.find({_id : id});
-
+            const query = await farmer.find({_id : id});
             if(query.length!=0){
-                const salt= parseInt(process.env.SALT);
-                const hashpassword = await bcrypt.hash(password, salt); 
-                const que = await student.findOneAndUpdate({_id:id},{password:hashpassword});
-                  console.log(que);
+              if(query[0].verified == true){
+                return res.json({success:false,
+                  msg:"first click on forget password and verify otp to reach here"});
+              }
+              const salt= parseInt(process.env.SALT);
+              const hashpassword = await bcrypt.hash(password, salt); 
+              const que = await farmer.findOneAndUpdate({_id:id},{password:hashpassword,language:language});
+              console.log(que);
+              const token = jwt.sign(
+                { id: que._id, language:language },
+                (process.env.JWT_SECRET).toString(),
+                // {expiresIn: "1h"}
+              );
+              console.log("here");
                   res.json({
                     success:true,
-                    token:query[0].id,
+                    token:token,
                     msg:"user password reset successfully"
                   });
   
@@ -159,6 +167,7 @@ const result={
             }
           }catch(err){
             res.json({success:false,
+              error:err,
             msg:"Some Internal server error"});
           }
 

@@ -1,5 +1,5 @@
 const express = require("express");
-const student = require("./enduserschema");
+const student = require("./farmerSchema");
 
 require('dotenv').config();
 const mongoose = require("mongoose");
@@ -7,8 +7,7 @@ var i=0;
 
 const connectDB =  {
   connection: async () => {
-            await mongoose.set("strictQuery", false);
-            // await mongoose.connect("mongodb+srv://udityaprakash01:"+process.env.MONGODBPASS+"@cluster0.za5wk8j.mongodb.net/?retryWrites=true&w=majority", (err) => {   
+            await mongoose.set("strictQuery", false);  
             await mongoose.connect(process.env.CONNSTRING, (err) => {   
   
               if (!err) {

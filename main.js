@@ -15,7 +15,7 @@ db.connection();
 
 
 //routes
-app.use('/user',require('./routers/userrouter'));
+app.use('/farmer',require('./routers/farmerrouter'));
 app.use('/admin', require('./routers/adminrouter'));
 
 const port= process.env.PORT || 3000;
@@ -34,4 +34,12 @@ app.all("*",(req,res)=>{
     });
 });
 
-module.exports = app;
+if(process.env.NODE_ENV === 'development'){
+
+    app.listen(port,()=>{
+        console.log(`server is running on port ${port}`);
+    });
+}else{
+
+    module.exports = app;
+}
