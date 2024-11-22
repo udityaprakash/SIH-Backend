@@ -1,9 +1,9 @@
 const router = require("express").Router();
-const signup = require("../componnents/authentications/user/signup");
-const login= require("../componnents/authentications/user/login");
-const dashboard=require("../componnents/utils/user/dashboard");
-const forgetpass=require("../componnents/authentications/user/forgetpass");
-const event = require("../componnents/utils/admin/event");
+const signup = require("../src/authentications/user/signup");
+const login= require("../src/authentications/user/login");
+const dashboard=require("../src/utils/user/dashboard");
+const forgetpass=require("../src/authentications/user/forgetpass");
+const event = require("../src/utils/admin/event");
 
 //--user/signup
 router.post('/signup',signup.post);

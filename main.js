@@ -3,7 +3,7 @@ const bodyparser = require("body-parser");
 const bcrypt=require("bcrypt");
 const app = express();
 require('dotenv').config()
-const db = require("./componnents/databasevariables/db")
+const db = require("./src/databasevariables/db")
 const cors = require("cors");
 
 app.use(cors());
