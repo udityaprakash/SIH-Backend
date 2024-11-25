@@ -49,9 +49,9 @@ post: async (req,res)=>{
 
 
           }else{
-            res.status(404).json({
+            res.status(400).json({
               success:false,
-              msg:"Email ID does'nt exist 😨"
+              msg:"Invalid User Credentials 😨"
             });
           }
   
