@@ -12,7 +12,7 @@ post: async (req,res)=>{
       email = email.toLowerCase();
       const result = await farmer.find({ email: email });
       console.log(result);
-      if(result != null){
+      if(result.length != 0){
             const match =await bcrypt.compare(password, result[0].password);
             if(match){
               console.log(result[0].verified);
