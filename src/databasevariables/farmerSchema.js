@@ -1,8 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const languages = ["en-US", "hi-IN", "bn-IN", "ta-IN", "te-IN", "gu-IN", "mr-IN", 
-            "kn-IN", "ml-IN", "pa-IN", "or-IN", "as-IN", "ur-IN", "sd-IN", 
-            "ne-IN", "sa-IN", "si-LK", "bo-IN", "dz-BT"];
+const languages = ['en', 'hi', 'bn', 'te', 'mr', 'ta', 'ur', 'gu', 'kn', 
+    'ml', 'or', 'pa', 'as', 'mai', 'sat', 'ks', 'sa', 'sd', 
+    'kok', 'mni', 'dgo', 'brx', 'ne'];
 
 const schema = new mongoose.Schema({
     fullname: {
