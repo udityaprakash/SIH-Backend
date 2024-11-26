@@ -1,228 +1,263 @@
 const bcrypt = require("bcrypt");
-var Emailvalidator = require("email-validator");
-require('dotenv').config()
-const nodemailer=require("nodemailer");
-const otpGenerator = require('otp-generator');
+const Emailvalidator = require("email-validator");
+require("dotenv").config();
+const nodemailer = require("nodemailer");
+const otpGenerator = require("otp-generator");
 const farmer = require("../../databasevariables/farmerSchema");
- 
+const getMessageByCode = require("./authMsgCode");
 
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
+const transporter = nodemailer.createTransport({
+  service: "gmail",
   auth: {
-    user: 'udityap.davegroup@gmail.com',
-    pass: process.env.EMAILPASSWORD
-  }
+    user: "udityap.davegroup@gmail.com",
+    pass: process.env.EMAILPASSWORD,
+  },
 });
 
-function validateLoginType(loginType){
-  if(loginType == "google" || loginType == "facebook" || loginType == "phnumber" || loginType == "email"){
-    return true;
-  }else{
-    return false;
-  }
-}
+// Utility function to get messages by code
+// function getMessageByCode(msgCode) {
+//   switch (msgCode) {
+//     case 200: return "Missing required fields: fullname, password, email, or language. 😉";
+//     case 201: return "Invalid login type. 🤨";
+//     case 202: return "Invalid email format. 🙄";
+//     case 203: return "User already registered. Please log in to continue. 😑";
+//     case 204: return "User registered successfully! 😍";
+//     case 205: return "Ready to sign up! 🤞";
+//     case 206: return "Failed to send OTP. Please try again later. 😗";
+//     case 207: return "OTP sent to email successfully! 😊";
+//     case 208: return "User does not exist. 😒";
+//     case 209: return "Invalid OTP. 😑";
+//     case 210: return "User verified successfully! 🥰";
+//     case 211: return "Internal server error during OTP verification. 🤔";
+//     case 500: return "Internal server error. Please try again later. 😥";
+//     default: return "Unknown message code. Please check your implementation.";
+//   }
+// }
 
+const result = {
+  post: async (req, res) => {
+    try {
+      const { fullname, password, email, language, loginType } = req.body;
 
-
-const result={
-post: async (req, res) => {
-  console.log(req.body);
-  let { fullname, password, email, language, loginType } = req.body;
-  let hashedpassword;
-
-  if (fullname && password && email && language) {
-      const salt = parseInt(process.env.SALT);
-      hashedpassword = await bcrypt.hash(password, salt);
-      email = email.toLowerCase();
-
-      try {
-          if (!validateLoginType(loginType)) {
-              return res.json({
-                  success: false,
-                  msg: "Invalid Login Type 🤨"
-              });
-          }
-
-          if (!Emailvalidator.validate(email)) {
-              return res.json({
-                  success: false,
-                  msg: "Invalid Email Format 🙄"
-              });
-          }
-
-          if (await result.userexist(email)) {
-              return res.json({
-                  success: false,
-                  msg: "Please login to continue 😑. User Already registered"
-              });
-          }
-
-          const user = new farmer({
-              fullname: fullname,
-              password: hashedpassword,
-              email: email,
-              language: language,
-              loginType: loginType,
-          });
-
-          await user.save()
-              .then((user) => {
-                  return res.status(200).json({
-                      success: true,
-                      msg: "User Recorded Successfully 😍"
-                  });
-              })
-              .catch((err) => {
-                  return res.status(400).json({
-                      success: false,
-                      error: err,
-                      msg: "User not been recorded 😥"
-                  });
-              });
-
-      } catch (error) {
-          console.log("error: " + error);
-          return res.status(500).json({
-              success: false,
-              msg: "Internal Server Error 😥",
-              error: error.message
-          });
-      }
-
-  } else {
-      return res.json({
+      // Validate required fields
+      if (!fullname || !password || !email || !language) {
+        return res.status(400).json({
           success: false,
-          msg: "One of the fields is missing 😉"
-      });
-  }
-},
-  get:(req,res)=>{
-    res.json({
-            status:200,
-            msg:"ready to signup 🤞"
-          });
-
-  },
-
-  verifyotp : async (req,res)=>{
-    let email=req.params['email'];
-    let otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false ,lowerCaseAlphabets:false});
-
-    if(Emailvalidator.validate(email)){
-      if(await result.userexist(email)){
-        var u = await farmer.findOne({email : email});
-        if(u.verified == true){
-          res.json({
-            success:false,
-            msg:"user already verified 😉"
-          });
-        }else{
-          try{
-            const sa = await farmer.findOneAndUpdate({email:email},{otp:otp});
-
-            var mailOptions = {
-                        from: 'udityap.davegroup@gmail.com',
-                        to: email,
-                        subject: 'Verify Email from Ministry Of Agriculture',
-                        html: `
-                    <div
-                      class="container"
-                      style="max-width: 90%; margin: auto; padding-top: 20px"
-                    >
-                      <h2>Welcome to AgroMitra.</h2>
-                      <h4>Greetings of the day!</h4>
-                      <p style="margin-bottom: 30px;">This is your OTP for email verification. Please enter this OTP to get started.</p>
-                      <h1 style="font-size: 40px; letter-spacing: 2px; text-align:center;">${otp}</h1>
-                      <p style="margin-bottom: 30px;">Reach out to us at IIT Hyderabad for further discussions.</p>
-                 </div>`
-            };
-
-            transporter.sendMail(mailOptions, function(error, info){
-                        if (error) {
-                          console.log("not send :"+error);
-                        } else {
-                          console.log('Email sent: ' + info.response);
-                          res.json({success:true,
-                          msg:"OTP send to email successfully😊"});
-                        }
-            });
-
-
-
-
-          }catch(err){
-            res.json({
-                        success:false,
-                        msg:"Either email invalid or sender email invalid 😗"
-            });
-
-          }
-        }
-
-      }else{
-        res.json({
-          success:false,
-          msg:"Email does not exist😁. Please verify it."
+          msgCode: 200,
+          msg: getMessageByCode(200),
         });
       }
-    }else{
-      res.json({
-        success:false,
-        msg:"Invalid Email Format 🤬"
+
+      // Validate login type
+      if (!validateLoginType(loginType)) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 201,
+          msg: getMessageByCode(201),
+        });
+      }
+
+      // Validate email format
+      if (!Emailvalidator.validate(email)) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 202,
+          msg: getMessageByCode(202),
+        });
+      }
+
+      const userExists = await result.userexist(email.toLowerCase());
+      if (userExists) {
+        return res.status(409).json({
+          success: false,
+          msgCode: 203,
+          msg: getMessageByCode(203),
+        });
+      }
+
+      // Hash password
+      const saltRounds = parseInt(process.env.SALT, 10) || 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Save user to database
+      const newUser = new farmer({
+        fullname,
+        password: hashedPassword,
+        email: email.toLowerCase(),
+        language,
+        loginType,
+      });
+
+      await newUser.save();
+      return res.status(201).json({
+        success: true,
+        msgCode: 204,
+        msg: getMessageByCode(204),
+      });
+    } catch (error) {
+      console.error("Error in user registration:", error.message);
+      return res.status(500).json({
+        success: false,
+        msgCode: 500,
+        msg: getMessageByCode(500),
+        error: error.message,
       });
     }
-    
-
   },
-  userexist: async (email)=>{
-    var u = await farmer.find({email : email});
-    if(u.length!=0){
-      return true;
-    }
-    else{
-      return false; 
-    }
 
+  get: (req, res) => {
+    res.status(200).json({
+      status: 200,
+      msgCode: 205,
+      msg: getMessageByCode(205),
+    });
   },
-  checkotp:async (req,res)=>{
-    const {otp}=req.body;
-    const email= req.params['email'];
 
-    if(Emailvalidator.validate(email)){
-      var resu = await farmer.find({email:email});
-        if(resu.length!=0){
-        if (resu[0].verified == false){
-            if(resu[0].otp == otp){
-              var result = await farmer.findOneAndUpdate({email:email},{otp:null,verified:true});
-              console.log(result);
-              res.json({
-                success:true,
-                token:resu[0]._id,
-                result:result,
-                msg:"user verified successfully 🥰"
-              });
+  verifyotp: async (req, res) => {
+    try {
+      const { email } = req.params;
+      const otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        specialChars: false,
+        lowerCaseAlphabets: false,
+      });
 
-            }else{
-              res.json({success:false,
-              msg:"Invalid OTP 😑"});
-              
-            }
+      if (!Emailvalidator.validate(email)) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 202,
+          msg: getMessageByCode(202),
+        });
+      }
 
+      const user = await farmer.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          msgCode: 208,
+          msg: getMessageByCode(208),
+        });
+      }
 
+      if (user.verified) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 210,
+          msg: getMessageByCode(210),
+        });
+      }
 
-          }else{
-              res.json({success:false,
-              msg:"user is already verified 🙂"});
-              
-            }
-          }else{
-            res.json({success:false,
-            msg:"user doesn't exist 😒"});
+      await farmer.findOneAndUpdate({ email }, { otp });
+
+      const mailOptions = {
+        from: "udityap.davegroup@gmail.com",
+        to: email,
+        subject: "Verify Email from Ministry Of Agriculture",
+        html: `
+          <div style="max-width: 90%; margin: auto; padding-top: 20px;">
+            <h2>Welcome to AgroMitra.</h2>
+            <p>This is your OTP for email verification. Please enter this OTP to get started:</p>
+            <h1 style="text-align: center;">${otp}</h1>
+            <p>Thank you for joining AgroMitra!</p>
+          </div>
+        `,
+      };
+
+      transporter.sendMail(mailOptions, (error) => {
+        if (error) {
+          console.error("Failed to send email:", error.message);
+          return res.status(500).json({
+            success: false,
+            msgCode: 206,
+            msg: getMessageByCode(206),
+          });
         }
 
+        return res.status(200).json({
+          success: true,
+          msgCode: 207,
+          msg: getMessageByCode(207),
+        });
+      });
+    } catch (error) {
+      console.error("Error in verifyotp:", error.message);
+      return res.status(500).json({
+        success: false,
+        msgCode: 211,
+        msg: getMessageByCode(211),
+        error: error.message,
+      });
+    }
+  },
 
-  }
-}
+  userexist: async (email) => {
+    try {
+      const user = await farmer.findOne({ email });
+      return !!user; // Return true if user exists
+    } catch (error) {
+      console.error("Error checking user existence:", error.message);
+      throw new Error("Error checking user existence.");
+    }
+  },
+
+  checkotp: async (req, res) => {
+    try {
+      const { otp } = req.body;
+      const { email } = req.params;
+
+      if (!Emailvalidator.validate(email)) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 202,
+          msg: getMessageByCode(202),
+        });
+      }
+
+      const user = await farmer.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          msgCode: 208,
+          msg: getMessageByCode(208),
+        });
+      }
+
+      if (user.verified) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 210,
+          msg: getMessageByCode(210),
+        });
+      }
+
+      if (user.otp !== otp) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 209,
+          msg: getMessageByCode(209),
+        });
+      }
+
+      await farmer.findOneAndUpdate(
+        { email },
+        { otp: null, verified: true }
+      );
+
+      return res.status(200).json({
+        success: true,
+        msgCode: 210,
+        msg: getMessageByCode(210),
+      });
+    } catch (error) {
+      console.error("Error in checkotp:", error.message);
+      return res.status(500).json({
+        success: false,
+        msgCode: 211,
+        msg: getMessageByCode(211),
+        error: error.message,
+      });
+    }
+  },
 };
 
 module.exports = result;
