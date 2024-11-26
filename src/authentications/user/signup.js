@@ -195,6 +195,7 @@ const result = {
     try {
       const { otp } = req.body;
       const { email } = req.params;
+      console.log(email, otp);
 
       if (!Emailvalidator.validate(email)) {
         return res.status(400).json({
@@ -221,7 +222,7 @@ const result = {
         });
       }
 
-      if (user.otp !== otp) {
+      if (user.otp != otp) {
         return res.status(400).json({
           success: false,
           msgCode: 209,

@@ -140,8 +140,8 @@ const result = {
           msg: getMessageByCode(217),
         });
       }
-
-      if (user.otp !== otp) {
+      console.log(user.otp, otp);
+      if (user.otp != otp) {
         return res.status(400).json({
           success: false,
           msgCode: 209, // Code for "Invalid OTP"
