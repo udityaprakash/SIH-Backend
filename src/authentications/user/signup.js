@@ -48,15 +48,6 @@ const result = {
         });
       }
 
-      // Validate login type
-      if (!validateLoginType(loginType)) {
-        return res.status(400).json({
-          success: false,
-          msgCode: 201,
-          msg: getMessageByCode(201),
-        });
-      }
-
       // Validate email format
       if (!Emailvalidator.validate(email)) {
         return res.status(400).json({
