@@ -172,11 +172,11 @@ const result = {
   },
 
   Set_password: async (req, res) => {
-    const { id, password, language } = req.body;
+    const { email, password } = req.body;
 
     try {
       // Validate fields
-      if (!id || !password || !language) {
+      if (!email || !password) {
         return res.status(400).json({
           success: false,
           msgCode: 212, // Code for "All fields are required"
@@ -184,7 +184,7 @@ const result = {
         });
       }
 
-      const user = await farmer.findById(id);
+      const user = await farmer.findOne({email:email.toLowerCase()});
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -201,26 +201,23 @@ const result = {
         });
       }
 
-      // Hash the new password
+
       const saltRounds = parseInt(process.env.SALT, 10) || 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Update password and language
-      await farmer.findByIdAndUpdate(id, {
+
+      await farmer.findOneAndUpdate({email: email}, {
         password: hashedPassword,
-        language,
       });
 
-      // Generate a JWT token
       const token = jwt.sign(
-        { id: user._id, language },
+        { id: user._id},
         process.env.JWT_SECRET,
-        // { expiresIn: "1h" } // Uncomment to enable token expiration
       );
 
       res.status(200).json({
         success: true,
-        msgCode: 214, // Code for "Password reset successfully"
+        msgCode: 214,
         msg: getMessageByCode(214),
         token,
       });
@@ -228,7 +225,7 @@ const result = {
       console.error("Error in Set_password:", error.message);
       res.status(500).json({
         success: false,
-        msgCode: 215, // Code for "Internal server error during password reset"
+        msgCode: 215,
         msg: getMessageByCode(215),
         error: error.message,
       });
