@@ -48,7 +48,7 @@ const result = {
       // Check if the user is verified
       if (!user.verified) {
         return res.status(403).json({
-          success: false,
+          success: true,
           msgCode: 103,
           msg: getMessageByCode(103),
           verified: false,
