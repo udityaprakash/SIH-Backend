@@ -4,6 +4,7 @@ const login= require("../src/authentications/user/login");
 const dashboard=require("../src/utils/user/dashboard");
 const forgetpass=require("../src/authentications/user/forgetpass");
 const event = require("../src/utils/admin/event");
+const weather = require("../src/weather/fetchweatherdata");
 
 //--user/signup
 router.post('/signup',signup.post);
@@ -25,6 +26,7 @@ router.post('/login/forgetpass/setpassword',forgetpass.Set_password);
 
 //--user/dashboard
 router.get('/dashboard/:id',dashboard.get);
+router.get('/weather/:lat/:lon',weather);
 
 router.get('/latest-events',event.getEvents);
 

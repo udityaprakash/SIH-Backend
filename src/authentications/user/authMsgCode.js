@@ -25,6 +25,7 @@ function getMessageByCode(msgCode) {
       case 216: return "Send a POST request with an email to initiate password reset.";
       case 217: return "Unable to update OTP. User not found in the database. 🤔";
       case 500: return "Internal server error. Please try again later. 😥";
+      case 1000: return "successfully fetched data";
       default: return "Unknown message code. Please check your implementation.";
     }
   }
