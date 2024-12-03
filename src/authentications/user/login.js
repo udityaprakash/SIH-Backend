@@ -11,7 +11,6 @@ const result = {
       console.log(req.body);
       let { email, password, language } = req.body;
 
-      // Validate the presence of all required fields
       if (!email || !password || !language) {
         return res.status(400).json({
           success: false,
@@ -23,7 +22,6 @@ const result = {
       email = email.toLowerCase();
       const user = await farmer.findOne({ email });
 
-      // Check if the user exists
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -32,7 +30,6 @@ const result = {
         });
       }
 
-      // Validate the password
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({
@@ -42,10 +39,8 @@ const result = {
         });
       }
 
-      // Update user's language preference
       await farmer.findByIdAndUpdate(user._id, { language });
 
-      // Check if the user is verified
       if (!user.verified) {
         return res.status(403).json({
           success: true,
@@ -56,11 +51,9 @@ const result = {
         });
       }
 
-      // Generate JWT token for the user
       const token = jwt.sign(
-        { id: user._id, language },
+        { id: user._id, email:user.email, language },
         process.env.JWT_SECRET,
-        // { expiresIn: "1h" } // Uncomment to add token expiration
       );
 
       return res.status(200).json({

@@ -13,7 +13,8 @@ router.get('/signup/verifyotp/:email',signup.verifyotp);
 router.post('/signup/verifyotp/:email',signup.checkotp);
 
 
-
+//oAuth
+router.post('/googleoauth',signup.oauth);
 
 //--user/login
 router.post('/login',login.post);

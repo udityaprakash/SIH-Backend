@@ -14,7 +14,9 @@ const schema = new mongoose.Schema({
     password: {
         type: String,
         min: 8,
-        required: true
+        required: function () {
+            return !this.loginToken;
+        }
     },
     email: {
         type: String,
@@ -81,7 +83,9 @@ const schema = new mongoose.Schema({
     },
     loginToken: {
         type: String,
-        required: false
+        required: false,
+        unique: true,
+        sparse: true
     },
     deviceId:{
         type: String,

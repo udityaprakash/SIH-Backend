@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const farmer = require("../../databasevariables/farmerSchema");
 const getMessageByCode = require("./authMsgCode");
+const jwt = require("jsonwebtoken");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -184,7 +185,7 @@ const result = {
   userexist: async (email) => {
     try {
       const user = await farmer.findOne({ email });
-      return !!user; // Return true if user exists
+      return !!user;
     } catch (error) {
       console.error("Error checking user existence:", error.message);
       throw new Error("Error checking user existence.");
@@ -250,6 +251,72 @@ const result = {
       });
     }
   },
+  oauth: async (req, res) => {
+    try {
+      const { id, fullname, email, language, loginType } = req.body;
+
+      if (!id || !fullname || !email || !language || !loginType) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 200,
+          msg: getMessageByCode(200),
+        });
+      }
+
+      if (!Emailvalidator.validate(email)) {
+        return res.status(400).json({
+          success: false,
+          msgCode: 202,
+          msg: getMessageByCode(202),
+        });
+      }
+
+      const userExists = await result.userexist(email.toLowerCase());
+      if (userExists) {
+        const token = jwt.sign({ id: userExists._id, email, language },process.env.JWT_SECRET);
+            return res.status(200).json({
+                success: true,
+                msgCode: 205,
+                msg: getMessageByCode(205),
+                token,
+            });
+      }
+
+      const newUser = new farmer({
+        fullname,
+        loginToken: id,
+        email: email.toLowerCase(),
+        language,
+        loginType,
+        verified: true,
+      });
+
+      await newUser.save();
+
+      const ntoken = jwt.sign({ id: newUser._id, email, language },process.env.JWT_SECRET);
+      return res.status(201).json({
+        success: true,
+        msgCode: 204,
+        user:{
+          id: newUser._id,
+          fullname: newUser.fullname,
+          email: newUser.email,
+          language: newUser.language,
+          loginType: newUser.loginType,
+      },
+        msg: getMessageByCode(204),
+        token: ntoken
+      });
+    } catch (error) {
+      console.error("Error in oAuth registration:", error.message);
+      return res.status(500).json({
+        success: false,
+        msgCode: 500,
+        msg: getMessageByCode(500),
+        error: error.message,
+      });
+    }
+  }
 };
 
 module.exports = result;
