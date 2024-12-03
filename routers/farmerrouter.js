@@ -5,6 +5,9 @@ const dashboard=require("../src/utils/user/dashboard");
 const forgetpass=require("../src/authentications/user/forgetpass");
 const event = require("../src/utils/admin/event");
 const weather = require("../src/weather/fetchweatherdata");
+const middleware = require("../src/utils/admin/middleware");
+const { upload } = require("../src/utils/user/filevalidator");
+const {setup, send} = require("../src/utils/user/home");
 
 //--user/signup
 router.post('/signup',signup.post);
@@ -28,6 +31,9 @@ router.post('/login/forgetpass/setpassword',forgetpass.Set_password);
 //--user/dashboard
 router.get('/dashboard/:id',dashboard.get);
 router.get('/weather/:lat/:lon',weather);
+router.post('/getnpk/:lat/:lon' ,middleware.setuser, upload.single('image'), setup.testimagefornpk);
+router.get('/getimage/:db/:id', send.image);
+// router.get('/setanyimage/:id',dashboard.getnpk); 
 
 router.get('/latest-events',event.getEvents);
 
