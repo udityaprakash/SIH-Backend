@@ -12,7 +12,7 @@ const weather = async (req, res) => {
             lat,
             lon,
             appid: apiKey,
-            units: 'metric',
+            units: 'metric'
         }});
         const weatherData = response.data;
         res.status(200).json({
@@ -22,7 +22,7 @@ const weather = async (req, res) => {
             msg: 'Weather data fetched successfully.'
         });
     } catch (error) {
-        console.error('Error fetching weather data:', error.message);
+        console.error('Error fetching weather data:', error);
         res.status(500).json({
             success: false,
             error: error.message,    

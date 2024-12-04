@@ -31,9 +31,9 @@ router.post('/login/forgetpass/setpassword',forgetpass.Set_password);
 //--user/dashboard
 router.get('/dashboard/:id',dashboard.get);
 router.get('/weather/:lat/:lon',weather);
-router.post('/getnpk/:lat/:lon' ,middleware.setuser, upload.single('image'), setup.testimagefornpk);
+router.post('/getnpk/:lat/:lon', middleware.setuser, upload.single('image'), setup.testimagefornpk);
 router.get('/getimage/:db/:id', send.image);
-// router.get('/setanyimage/:id',dashboard.getnpk); 
+router.post('/storeanyimage',middleware.setuser,upload.single('image'), send.storeimage);
 
 router.get('/latest-events',event.getEvents);
 
