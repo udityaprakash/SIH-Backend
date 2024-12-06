@@ -271,9 +271,10 @@ const result = {
         });
       }
 
-      const userExists = await result.userexist(email.toLowerCase());
-      if (userExists) {
-        const token = jwt.sign({ id: userExists._id, email, language },process.env.JWT_SECRET);
+      const user = await farmer.findOne({ email });
+      if (user) {
+        // console.log("User exists:", user);
+        const token = jwt.sign({ id: user._id, email, language },process.env.JWT_SECRET);
             return res.status(200).json({
                 success: true,
                 msgCode: 205,
@@ -282,6 +283,7 @@ const result = {
             });
       }
 
+      
       const newUser = new farmer({
         fullname,
         loginToken: id,
