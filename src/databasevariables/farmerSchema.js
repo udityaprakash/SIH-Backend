@@ -18,6 +18,10 @@ const schema = new mongoose.Schema({
             return !this.loginToken;
         }
     },
+    profile_pic:{
+        type: String,
+        required: false
+    },
     email: {
         type: String,
         trim: true,

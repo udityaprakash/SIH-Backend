@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const signup = require("../src/authentications/user/signup");
 const login= require("../src/authentications/user/login");
-const dashboard=require("../src/utils/user/dashboard");
+const dashboard=require("../src/utils/user/user_profile");
 const forgetpass=require("../src/authentications/user/forgetpass");
 const event = require("../src/utils/admin/event");
 const weather = require("../src/weather/fetchweatherdata");

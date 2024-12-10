@@ -75,6 +75,7 @@ const result = {
       const newUser = new farmer({
         fullname,
         password: hashedPassword,
+        profile_pic: "https://cdn-icons-png.flaticon.com/512/2330/2330895.png",
         email: email.toLowerCase(),
         language,
         loginType,
@@ -287,6 +288,7 @@ const result = {
       const newUser = new farmer({
         fullname,
         loginToken: id,
+        profile_pic: profile_pic ? profile_pic : "https://cdn-icons-png.flaticon.com/512/2330/2330895.png",
         email: email.toLowerCase(),
         language,
         loginType,
