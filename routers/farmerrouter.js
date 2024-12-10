@@ -27,6 +27,8 @@ router.post('/login/forgetpass',forgetpass.post_enteremail);
 router.post('/login/forgetpass/verification',forgetpass.post_otp_verification);
 router.post('/login/forgetpass/setpassword',forgetpass.Set_password);
 
+router.post('/authenticatetoken',middleware.setusertoauthenticate);
+
 
 //--user/dashboard
 router.post('/dashboard',middleware.setuser, dashboard.get);
