@@ -29,7 +29,7 @@ router.post('/login/forgetpass/setpassword',forgetpass.Set_password);
 
 
 //--user/dashboard
-router.get('/dashboard/:id',dashboard.get);
+router.post('/dashboard',middleware.setuser, dashboard.get);
 router.get('/weather/:lat/:lon',weather);
 router.post('/getnpk/:lat/:lon', middleware.setuser, upload.single('image'), setup.testimagefornpk);
 router.get('/getimage/:db/:id', send.image);

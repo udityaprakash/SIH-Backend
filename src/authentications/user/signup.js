@@ -254,8 +254,9 @@ const result = {
   },
   oauth: async (req, res) => {
     try {
-      const { id, fullname, email, language, loginType } = req.body;
+      const { id, fullname, email, language, loginType, profile_pic } = req.body;
 
+      console.log(id, fullname, email, language, loginType, profile_pic);
       if (!id || !fullname || !email || !language || !loginType) {
         return res.status(400).json({
           success: false,
