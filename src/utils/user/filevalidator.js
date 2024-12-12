@@ -8,7 +8,7 @@ const upload = multer({
 
 async function compressor(buffer){
     const compressedImageBuffer = await sharp(buffer)
-          .resize({ width: 500 })
+          .resize({ width: 800 })
           .toBuffer();
     return compressedImageBuffer;      
 }
